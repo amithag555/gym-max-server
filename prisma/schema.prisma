@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Club {
+  id                  Int    @id @default(autoincrement())
+  name                String @db.VarChar(50)
+  address             String @db.VarChar(100)
+  phoneNumber         String @db.VarChar(10)
+  currentMembersCount Int    @default(0)
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique() @db.VarChar(50)
+  firstName String?  @db.VarChar(50)
+  lastName  String?  @db.VarChar(50)
+  role      EnumRole
+  password  String   @db.VarChar(100)
+  isActive  Boolean  @default(true)
+}
+
+model Employee {
+  id          Int     @id @default(autoincrement())
+  firstName   String  @db.VarChar(50)
+  lastName    String  @db.VarChar(50)
+  address     String? @db.VarChar(100)
+  phoneNumber String  @db.VarChar(10)
+  email       String  @unique() @db.VarChar(100)
+  isActive    Boolean @default(true)
+}
+
+model Member {
+  id            Int              @id @default(autoincrement())
+  firstName     String           @db.VarChar(50)
+  lastName      String           @db.VarChar(50)
+  fullName      String           @db.VarChar(50)
+  password      String           @default("0000") @db.VarChar(100)
+  address       String?          @db.VarChar(100)
+  phoneNumber   String           @db.VarChar(10)
+  role          EnumRole         @default(MEMBER)
+  email         String           @unique() @db.VarChar(100)
+  imgUrl        String?
+  status        EnumMemberStatus @default(ACTIVE)
+  isActive      Boolean          @default(true)
+  creationDate  DateTime         @default(now())
+  expiredDate   DateTime
+  isEntry       Boolean          @default(false)
+  isFirstLogin  Boolean          @default(true)
+  trainingPlans TrainingPlan[]
+  workoutGoals  WorkoutGoal[]
+  trainings     Training[]
+  notifications Notification[]
+  gymClasses    GymClass[]
+  entrys        Entry[]
+}
+
+model WorkoutGoal {
+  id                    Int      @id @default(autoincrement())
+  date                  DateTime @default(now())
+  trainingNumber        Int
+  currentTrainingNumber Int
+  member                Member   @relation(fields: [memberId], references: [id])
+  memberId              Int
+}
+
+model TrainingPlan {
+  id          Int         @id @default(autoincrement())
+  title       String      @db.VarChar(100)
+  trainerName String?     @db.VarChar(50)
+  member      Member      @relation(fields: [memberId], references: [id])
+  memberId    Int
+  plainItems  PlainItem[]
+}
+
+model PlainItem {
+  id             Int          @id @default(autoincrement())
+  muscleName     String       @db.VarChar(50)
+  trainingPlan   TrainingPlan @relation(fields: [trainingPlanId], references: [id])
+  trainingPlanId Int
+  exercises      Exercise[]
+}
+
+model Exercise {
+  id                Int       @id @default(autoincrement())
+  title             String    @db.VarChar(50)
+  setsNumber        Int
+  repetitionsNumber Int
+  machineNumber     String?   @db.VarChar(25)
+  weight            Int?
+  plainItem         PlainItem @relation(fields: [plainItemId], references: [id])
+  plainItemId       Int
+}
+
+model Notification {
+  id      Int      @id @default(autoincrement())
+  title   String   @db.VarChar(50)
+  context String   @db.VarChar(300)
+  isRead  Boolean  @default(false)
+  members Member[]
+}
+
+model GymClass {
+  id         Int              @id @default(autoincrement())
+  type       EnumGymClassType
+  trainer    String           @db.VarChar(50)
+  day        EnumDay
+  isActive   Boolean          @default(true)
+  startHour  DateTime
+  duration   Int
+  roomNumber Int
+  maxMembers Int
+  members    Member[]
+}
+
+model Training {
+  id        Int              @id @default(autoincrement())
+  member    Member           @relation(fields: [memberId], references: [id])
+  memberId  Int
+  date      DateTime
+  startTime DateTime?
+  endtTime  DateTime?
+  type      enumTrainingType
+}
+
+model WorkDayActivity {
+  id              Int               @id @default(autoincrement())
+  date            DateTime          @default(now())
+  count           Int               @default(0)
+  activityPerHour ActivityPerHour[]
+}
+
+model ActivityPerHour {
+  id                Int             @id @default(autoincrement())
+  hour              DateTime
+  count             Int
+  workDayActivity   WorkDayActivity @relation(fields: [workDayActivityId], references: [id])
+  workDayActivityId Int
+}
+
+model Entry {
+  id       Int           @id @default(autoincrement())
+  date     DateTime      @default(now())
+  type     EnumEntryType
+  member   Member        @relation(fields: [memberId], references: [id])
+  memberId Int
+}
+
+enum EnumRole {
+  MEMBER
+  ADMIN
+  RECEPTION
+  SELLER
+  TRAINER
+}
+
+enum EnumGymClassType {
+  SPINNING
+  BOXING
+  SWIMMING
+  BODYSHAPE
+  YOGA
+}
+
+enum EnumDay {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum enumTrainingType {
+  AEROBIC
+  SWIMMING
+  GYMCLASS
+  A
+  B
+  C
+  FULLBODY
+}
+
+enum EnumMemberStatus {
+  ACTIVE
+  CANCELLED
+  SUSPEND
+}
+
+enum EnumEntryType {
+  ENTRY
+  EXIT
+}
