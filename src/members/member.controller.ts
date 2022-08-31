@@ -176,6 +176,21 @@ export class MemberController {
     }
   }
 
+  @Put('/isFirstLogin')
+  @Roles(EnumRole.MEMBER)
+  async changeIsFirstLogin(
+    @GetUser() member: MemberModel,
+  ): Promise<MemberModel> {
+    try {
+      return await this.memberService.changeIsFirstLogin(member.id);
+    } catch (error) {
+      throw new HttpException(
+        error.response.message,
+        error.response.statusCode,
+      );
+    }
+  }
+
   @Put(':id')
   @Roles(EnumRole.ADMIN, EnumRole.RECEPTION)
   async editMemberById(

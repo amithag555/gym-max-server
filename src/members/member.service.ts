@@ -298,6 +298,24 @@ export class MemberService {
     }
   }
 
+  async changeIsFirstLogin(id: number): Promise<MemberModel> {
+    try {
+      const memberReturned = await this.prisma.member.update({
+        where: {
+          id: id,
+        },
+        data: {
+          isFirstLogin: false,
+        },
+      });
+
+      memberReturned.password = '*****';
+      return memberReturned;
+    } catch (error) {
+      return error;
+    }
+  }
+
   async updateImgUrl(imgUrl: string, id: number): Promise<MemberModel> {
     try {
       const memberReturned = await this.prisma.member.update({

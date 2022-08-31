@@ -10,12 +10,15 @@ export class WorkDayActivityService {
 
   async getWorkDayActivityByDate(date: string): Promise<WorkDayActivityModel> {
     try {
+      console.log(date);
       const tempDate = new Date(`${date} 00:00:00`);
       const newDate = new Date(
         tempDate.getFullYear(),
         tempDate.getMonth(),
         tempDate.getDate() + 1,
       );
+
+      console.log(newDate);
 
       return await this.prisma.workDayActivity.findFirst({
         where: {
