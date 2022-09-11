@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
   Param,
   ParseIntPipe,
   Post,
@@ -32,43 +31,22 @@ export class UsersController {
     @Query('page', ParseIntPipe) pageNumber: number,
     @Query('perPage', ParseIntPipe) perPageNumber: number,
   ): Promise<UserModel[]> {
-    try {
-      return await this.userService.getUsersByPageNumberAndPerPage(
-        pageNumber,
-        perPageNumber,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.getUsersByPageNumberAndPerPage(
+      pageNumber,
+      perPageNumber,
+    );
   }
 
   @Get('/usersCount')
   @Roles(EnumRole.ADMIN)
   async getUsersCount(): Promise<number> {
-    try {
-      return await this.userService.getUsersCount();
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.getUsersCount();
   }
 
   @Get('/searchUsersCount')
   @Roles(EnumRole.ADMIN)
   async getSearchUsersCount(@Query('q') searchText: string): Promise<number> {
-    try {
-      return await this.userService.getSearchUsersCount(searchText);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.getSearchUsersCount(searchText);
   }
 
   @Get('/byToken')
@@ -84,18 +62,11 @@ export class UsersController {
     @Query('perPage', ParseIntPipe) perPageNumber: number,
     @Query('q') searchText: string,
   ): Promise<UserModel[]> {
-    try {
-      return await this.userService.getUsersByUsername(
-        pageNumber,
-        perPageNumber,
-        searchText,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.getUsersByUsername(
+      pageNumber,
+      perPageNumber,
+      searchText,
+    );
   }
 
   @Get('/:id')
@@ -106,14 +77,7 @@ export class UsersController {
   @Post()
   @Roles(EnumRole.ADMIN)
   async createUser(@Body() newUser: CreateUserDto): Promise<UserModel> {
-    try {
-      return await this.userService.createUser(newUser);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.createUser(newUser);
   }
 
   @Put(':id')
@@ -122,14 +86,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() userToEdit: EditUserDto,
   ): Promise<UserModel> {
-    try {
-      return await this.userService.editUserById(id, userToEdit);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.editUserById(id, userToEdit);
   }
 
   @Put('/password/:id')
@@ -138,14 +95,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() newPassword: UpdatePasswordDto,
   ): Promise<UserModel> {
-    try {
-      return await this.userService.updatePassword(id, newPassword);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.updatePassword(id, newPassword);
   }
 
   @Delete(':id')
@@ -153,13 +103,6 @@ export class UsersController {
   async deleteUserById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UserModel> {
-    try {
-      return await this.userService.deleteUserById(id);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.userService.deleteUserById(id);
   }
 }

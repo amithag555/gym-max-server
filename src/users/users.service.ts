@@ -1,7 +1,6 @@
 import {
-  ConflictException,
+  HttpException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
@@ -29,7 +28,7 @@ export class UsersService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -37,7 +36,7 @@ export class UsersService {
     try {
       return await this.prisma.user.count();
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -51,7 +50,7 @@ export class UsersService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -74,7 +73,7 @@ export class UsersService {
         },
       });
     } catch (error) {
-      return error.response;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -87,13 +86,13 @@ export class UsersService {
       });
 
       if (!userReturned) {
-        throw new NotFoundException('User not found!');
+        return null;
       }
 
       userReturned.password = '*****';
       return userReturned;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -105,14 +104,10 @@ export class UsersService {
         },
       });
 
-      if (!userReturned) {
-        throw new NotFoundException('User not found!');
-      }
-
       userReturned.password = '*****';
       return userReturned;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -128,9 +123,9 @@ export class UsersService {
       return newUserReturned;
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new ConflictException('Username already exists');
+        throw new HttpException('Username already exists', 409);
       } else {
-        return error;
+        throw new HttpException('Internal server error', 500);
       }
     }
   }
@@ -144,17 +139,15 @@ export class UsersService {
         data: userToEdit,
       });
 
-      if (!userReturned) {
-        return null;
-      }
-
       userReturned.password = '*****';
       return userReturned;
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new ConflictException('Username already exists');
+        throw new HttpException('Username already exists', 409);
+      } else if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
       } else {
-        return error;
+        throw new HttpException('Internal server error', 500);
       }
     }
   }
@@ -178,7 +171,11 @@ export class UsersService {
       userReturned.password = '*****';
       return userReturned;
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -193,32 +190,44 @@ export class UsersService {
       userReturned.password = '*****';
       return userReturned;
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
   async validateUserLoginDetails(
     userDetails: LoginUserDto,
   ): Promise<UserModel> {
-    const returnedUser = await this.prisma.user.findUnique({
-      where: {
-        username: userDetails.username,
-      },
-    });
+    try {
+      const returnedUser = await this.prisma.user.findUnique({
+        where: {
+          username: userDetails.username,
+        },
+      });
 
-    if (!returnedUser) {
-      throw new UnauthorizedException('Invalid username or password');
+      if (!returnedUser) {
+        throw new UnauthorizedException('Invalid username or password');
+      }
+
+      const validatePassword = await compare(
+        userDetails.password,
+        returnedUser.password,
+      );
+
+      if (!validatePassword) {
+        throw new UnauthorizedException('Invalid username or password');
+      }
+
+      return returnedUser;
+    } catch (error) {
+      if (error.response.statusCode === 401) {
+        throw new HttpException('Invalid username or password', 401);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
-
-    const validatePassword = await compare(
-      userDetails.password,
-      returnedUser.password,
-    );
-
-    if (!validatePassword) {
-      throw new UnauthorizedException('Invalid username or password');
-    }
-
-    return returnedUser;
   }
 }

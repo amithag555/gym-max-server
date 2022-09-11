@@ -1,7 +1,6 @@
 import {
-  ConflictException,
+  HttpException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateMemberDto } from 'src/models/create-member.dto';
@@ -35,7 +34,7 @@ export class MemberService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -55,7 +54,7 @@ export class MemberService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -67,7 +66,7 @@ export class MemberService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -101,7 +100,7 @@ export class MemberService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -113,14 +112,10 @@ export class MemberService {
         },
       });
 
-      if (!returnedMember) {
-        throw new NotFoundException(`Member not found!`);
-      }
-
       returnedMember.password = '*****';
       return returnedMember;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -133,13 +128,13 @@ export class MemberService {
       });
 
       if (!returnedMember) {
-        throw new NotFoundException(`Member not found!`);
+        return null;
       }
 
       returnedMember.password = '*****';
       return returnedMember;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -182,7 +177,7 @@ export class MemberService {
         },
       });
     } catch (error) {
-      return error.response;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -207,9 +202,11 @@ export class MemberService {
       return memberReturned;
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new ConflictException('Email already exists');
+        throw new HttpException('Email already exists', 409);
+      } else if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
       } else {
-        return error;
+        throw new HttpException('Internal server error', 500);
       }
     }
   }
@@ -233,7 +230,7 @@ export class MemberService {
       memberReturned.password = '*****';
       return memberReturned;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -255,9 +252,9 @@ export class MemberService {
       return newMemberReturned;
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new ConflictException('Email already exists');
+        throw new HttpException('Email already exists', 409);
       } else {
-        return error;
+        throw new HttpException('Internal server error', 500);
       }
     }
   }
@@ -276,7 +273,11 @@ export class MemberService {
       memberReturned.password = '*****';
       return memberReturned;
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -294,7 +295,7 @@ export class MemberService {
       memberReturned.password = '*****';
       return memberReturned;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -312,7 +313,7 @@ export class MemberService {
       memberReturned.password = '*****';
       return memberReturned;
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -330,32 +331,44 @@ export class MemberService {
       memberReturned.password = '*****';
       return memberReturned;
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
   async validateMemberLoginDetails(
     memberDetails: LoginMemberDto,
   ): Promise<MemberModel> {
-    const returnedMember = await this.prisma.member.findUnique({
-      where: {
-        email: memberDetails.email,
-      },
-    });
+    try {
+      const returnedMember = await this.prisma.member.findUnique({
+        where: {
+          email: memberDetails.email,
+        },
+      });
 
-    if (!returnedMember) {
-      throw new UnauthorizedException('Invalid email or password');
+      if (!returnedMember) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      const validatePassword = await compare(
+        memberDetails.password,
+        returnedMember.password,
+      );
+
+      if (!validatePassword) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      return returnedMember;
+    } catch (error) {
+      if (error.response.statusCode === 401) {
+        throw new HttpException('Invalid email or password', 401);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
-
-    const validatePassword = await compare(
-      memberDetails.password,
-      returnedMember.password,
-    );
-
-    if (!validatePassword) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    return returnedMember;
   }
 }

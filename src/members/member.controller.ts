@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
   Post,
   Query,
   Param,
@@ -31,40 +30,19 @@ export class MemberController {
   @Get()
   @Roles(EnumRole.ADMIN, EnumRole.RECEPTION, EnumRole.TRAINER)
   async getAllMembers(): Promise<RetrieveMemberDto[]> {
-    try {
-      return await this.memberService.getAllMembers();
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.getAllMembers();
   }
 
   @Get('/membersCount')
   @Roles(EnumRole.ADMIN, EnumRole.RECEPTION)
   async getMembersCount(): Promise<number> {
-    try {
-      return await this.memberService.getMembersCount();
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.getMembersCount();
   }
 
   @Get('/searchMembersCount')
   @Roles(EnumRole.ADMIN, EnumRole.RECEPTION)
   async getSearchMembersCount(@Query('q') searchText: string): Promise<number> {
-    try {
-      return await this.memberService.getSearchMembersCount(searchText);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.getSearchMembersCount(searchText);
   }
 
   @Get('/byPage')
@@ -73,17 +51,10 @@ export class MemberController {
     @Query('page', ParseIntPipe) pageNumber: number,
     @Query('perPage', ParseIntPipe) perPageNumber: number,
   ): Promise<MemberModel[]> {
-    try {
-      return await this.memberService.getMembersByPageNumberAndPerPage(
-        pageNumber,
-        perPageNumber,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.getMembersByPageNumberAndPerPage(
+      pageNumber,
+      perPageNumber,
+    );
   }
 
   @Get('/byToken')
@@ -91,14 +62,7 @@ export class MemberController {
   async getMemberByTokenEmail(
     @GetUser() member: MemberModel,
   ): Promise<MemberModel> {
-    try {
-      return await this.memberService.getMemberByTokenEmail(member);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.getMemberByTokenEmail(member);
   }
 
   @Get('/search')
@@ -108,18 +72,11 @@ export class MemberController {
     @Query('perPage', ParseIntPipe) perPageNumber: number,
     @Query('q') searchText: string,
   ): Promise<MemberModel[]> {
-    try {
-      return await this.memberService.getMembersByNameOrPhoneNumber(
-        pageNumber,
-        perPageNumber,
-        searchText,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.getMembersByNameOrPhoneNumber(
+      pageNumber,
+      perPageNumber,
+      searchText,
+    );
   }
 
   @Get('/:id')
@@ -137,14 +94,7 @@ export class MemberController {
     @GetUser() member: MemberModel,
     @Body() newPassword: UpdatePasswordDto,
   ): Promise<MemberModel> {
-    try {
-      return await this.memberService.updatePassword(member.id, newPassword);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.updatePassword(member.id, newPassword);
   }
 
   @Put('/imgUrl/:id')
@@ -153,27 +103,13 @@ export class MemberController {
     @Param('id', ParseIntPipe) id: number,
     @Body('imgUrl') imgUrl: string,
   ): Promise<MemberModel> {
-    try {
-      return await this.memberService.updateImgUrl(imgUrl, id);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.updateImgUrl(imgUrl, id);
   }
 
   @Put('/isEntry')
   @Roles(EnumRole.MEMBER)
   async changeIsEntry(@GetUser() member: MemberModel): Promise<MemberModel> {
-    try {
-      return await this.memberService.changeIsEntry(member.id, member.isEntry);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.changeIsEntry(member.id, member.isEntry);
   }
 
   @Put('/isFirstLogin')
@@ -181,14 +117,7 @@ export class MemberController {
   async changeIsFirstLogin(
     @GetUser() member: MemberModel,
   ): Promise<MemberModel> {
-    try {
-      return await this.memberService.changeIsFirstLogin(member.id);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.changeIsFirstLogin(member.id);
   }
 
   @Put(':id')
@@ -197,14 +126,7 @@ export class MemberController {
     @Param('id', ParseIntPipe) id: number,
     @Body() memberToEdit: EditMemberDto,
   ): Promise<MemberModel> {
-    try {
-      return await this.memberService.editMemberById(id, memberToEdit);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.editMemberById(id, memberToEdit);
   }
 
   @Put('delete/:id')
@@ -212,26 +134,12 @@ export class MemberController {
   async deleteMemberById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<MemberModel> {
-    try {
-      return await this.memberService.deleteMemberById(id);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.deleteMemberById(id);
   }
 
   @Post()
   @Roles(EnumRole.ADMIN)
   async createMember(@Body() newMember: CreateMemberDto): Promise<MemberModel> {
-    try {
-      return await this.memberService.createMember(newMember);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.memberService.createMember(newMember);
   }
 }

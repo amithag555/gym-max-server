@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ClubModel } from './models/club.model';
 
@@ -8,13 +8,13 @@ export class ClubService {
 
   async getClubById(id: number): Promise<ClubModel> {
     try {
-      return await this.prisma.club.findFirst({
+      return await this.prisma.club.findUnique({
         where: {
           id: id,
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -31,7 +31,11 @@ export class ClubService {
         },
       });
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -48,7 +52,11 @@ export class ClubService {
         },
       });
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -63,7 +71,11 @@ export class ClubService {
         },
       });
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 }

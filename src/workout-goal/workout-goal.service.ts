@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWorkoutGoalDto } from './dto/create-workout-goal.dto';
 import { EditWorkoutGoalDto } from './dto/edit-workout-goal.dto';
@@ -12,11 +12,13 @@ export class WorkoutGoalService {
     memberId: number,
   ): Promise<WorkoutGoalModel> {
     try {
-      const currentDate = new Date(
-        `${new Date().getFullYear().toString()}-${(
-          new Date().getMonth() + 1
-        ).toString()}-02`,
-      );
+      const currentDate = new Date();
+
+      currentDate.setDate(1);
+      currentDate.setUTCHours(0);
+      currentDate.setUTCMinutes(0);
+      currentDate.setUTCSeconds(0);
+      currentDate.setUTCMilliseconds(0);
 
       return await this.prisma.workoutGoal.findFirst({
         where: {
@@ -25,7 +27,7 @@ export class WorkoutGoalService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -47,7 +49,7 @@ export class WorkoutGoalService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -56,11 +58,13 @@ export class WorkoutGoalService {
     memberId: number,
   ): Promise<WorkoutGoalModel> {
     try {
-      const tempDate = new Date(
-        `${new Date().getFullYear().toString()}-${(
-          new Date().getMonth() + 1
-        ).toString()}-02`,
-      );
+      const tempDate = new Date();
+
+      tempDate.setDate(1);
+      tempDate.setUTCHours(0);
+      tempDate.setUTCMinutes(0);
+      tempDate.setUTCSeconds(0);
+      tempDate.setUTCMilliseconds(0);
 
       const currentWorkoutGoal = await this.getCurrentMemberWorkoutGoal(
         memberId,
@@ -72,7 +76,8 @@ export class WorkoutGoalService {
 
       return await this.prisma.workoutGoal.create({
         data: {
-          ...newWorkoutGoal,
+          trainingNumber: newWorkoutGoal.trainingNumber,
+          memberId: memberId,
           date: tempDate,
           currentTrainingNumber: 0,
         },

@@ -6,7 +6,6 @@ import { CreateMemberDto } from 'src/models/create-member.dto';
 import { CreateUserDto } from 'src/models/create-user.dto';
 import { LoginMemberDto } from 'src/models/login-member.dto';
 import { LoginUserDto } from 'src/models/login-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { UserModel } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { JwtPayload } from './jwt-payload.interface';
@@ -14,7 +13,6 @@ import { JwtPayload } from './jwt-payload.interface';
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
     private memberService: MemberService,
     private userService: UsersService,
     private jwtService: JwtService,

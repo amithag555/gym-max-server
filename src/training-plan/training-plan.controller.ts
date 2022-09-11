@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
   Param,
   Post,
   Put,
@@ -47,14 +46,7 @@ export class TrainingPlanController {
   @Get('/trainingPlansCount')
   @Roles(EnumRole.ADMIN, EnumRole.TRAINER)
   async getTrainingPlansCount(): Promise<number> {
-    try {
-      return await this.trainingPlanService.getTrainingPlansCount();
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.trainingPlanService.getTrainingPlansCount();
   }
 
   @Get('/memberTrainingPlansCount/:memberId')
@@ -62,16 +54,7 @@ export class TrainingPlanController {
   async getMemberTrainingPlansCount(
     @Param('memberId', ParseIntPipe) memberId: number,
   ): Promise<number> {
-    try {
-      return await this.trainingPlanService.getMemberTrainingPlansCount(
-        memberId,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.trainingPlanService.getMemberTrainingPlansCount(memberId);
   }
 
   @Get('/:id')
@@ -80,14 +63,7 @@ export class TrainingPlanController {
   async getTrainingPlanById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<TrainingPlanModel> {
-    try {
-      return await this.trainingPlanService.getTrainingPlanById(id);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.trainingPlanService.getTrainingPlanById(id);
   }
 
   @Get('/member/:memberId')
@@ -152,14 +128,7 @@ export class TrainingPlanController {
     @Body() exerciseToEdit: EditExerciseDto,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ExerciseModel> {
-    try {
-      return await this.trainingPlanService.editExercise(exerciseToEdit, id);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.trainingPlanService.editExercise(exerciseToEdit, id);
   }
 
   @Delete(':id')

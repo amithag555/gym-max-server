@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTrainingPlanDto } from './dto/create-training-plan.dto';
 import { TrainingPlanModel } from './models/trainingPlan.model';
@@ -31,7 +31,7 @@ export class TrainingPlanService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -39,7 +39,7 @@ export class TrainingPlanService {
     try {
       return await this.prisma.trainingPlan.count();
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -51,23 +51,27 @@ export class TrainingPlanService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
   async getAllTrainingPlansByMemberId(
     memberId: number,
   ): Promise<TrainingPlanModel[]> {
-    return await this.prisma.trainingPlan.findMany({
-      where: { memberId: memberId },
-      include: {
-        plainItems: {
-          include: {
-            exercises: true,
+    try {
+      return await this.prisma.trainingPlan.findMany({
+        where: { memberId: memberId },
+        include: {
+          plainItems: {
+            include: {
+              exercises: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      throw new HttpException('Internal server error', 500);
+    }
   }
 
   async getTrainingPlansByMemberIdPageNumberAndPerPage(
@@ -75,18 +79,22 @@ export class TrainingPlanService {
     pageNumber: number,
     perPageNumber: number,
   ): Promise<TrainingPlanModel[]> {
-    return await this.prisma.trainingPlan.findMany({
-      skip: (pageNumber - 1) * perPageNumber,
-      take: perPageNumber,
-      where: { memberId: memberId },
-      include: {
-        plainItems: {
-          include: {
-            exercises: true,
+    try {
+      return await this.prisma.trainingPlan.findMany({
+        skip: (pageNumber - 1) * perPageNumber,
+        take: perPageNumber,
+        where: { memberId: memberId },
+        include: {
+          plainItems: {
+            include: {
+              exercises: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      throw new HttpException('Internal server error', 500);
+    }
   }
 
   async getTrainingPlanById(
@@ -104,32 +112,34 @@ export class TrainingPlanService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      throw new HttpException('Internal server error', 500);
     }
   }
 
   async createTrainingPlan(
     newTrainingPlan: CreateTrainingPlanDto,
   ): Promise<TrainingPlanModel> {
-    const createdTrainingPlan = await this.prisma.trainingPlan.create({
-      data: {
-        title: newTrainingPlan.title,
-        trainerName: newTrainingPlan.trainerName,
-        plainItems: {
-          create: [],
+    try {
+      const createdTrainingPlan = await this.prisma.trainingPlan.create({
+        data: {
+          title: newTrainingPlan.title,
+          trainerName: newTrainingPlan.trainerName,
+          plainItems: {
+            create: [],
+          },
+          memberId: newTrainingPlan.memberId,
         },
-        memberId: newTrainingPlan.memberId,
-      },
-    });
+      });
 
-    await this.addPlainItemsToTrainingPlan(
-      createdTrainingPlan.id,
-      newTrainingPlan,
-    );
+      await this.addPlainItemsToTrainingPlan(
+        createdTrainingPlan.id,
+        newTrainingPlan,
+      );
 
-    return await this.getTrainingPlanById(createdTrainingPlan.id);
+      return await this.getTrainingPlanById(createdTrainingPlan.id);
+    } catch (error) {
+      throw new HttpException('Internal server error', 500);
+    }
   }
 
   async addPlainItemsToTrainingPlan(
@@ -160,48 +170,86 @@ export class TrainingPlanService {
   async createPlanItem(
     newPlanItem: CreatePlainItemDto,
   ): Promise<PlainItemModel> {
-    return await this.prisma.plainItem.create({
-      data: {
-        muscleName: newPlanItem.muscleName,
-        trainingPlanId: newPlanItem.trainingPlanId,
-        exercises: {
-          create: newPlanItem.exercises,
+    try {
+      return await this.prisma.plainItem.create({
+        data: {
+          muscleName: newPlanItem.muscleName,
+          trainingPlanId: newPlanItem.trainingPlanId,
+          exercises: {
+            create: newPlanItem.exercises,
+          },
         },
-      },
-      include: {
-        exercises: true,
-      },
-    });
+        include: {
+          exercises: true,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2003') {
+        throw new HttpException(
+          'No parent record was found for connection',
+          404,
+        );
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async createExercise(newExercise: CreateExerciseDto): Promise<ExerciseModel> {
-    return await this.prisma.exercise.create({
-      data: newExercise,
-    });
+    try {
+      return await this.prisma.exercise.create({
+        data: newExercise,
+      });
+    } catch (error) {
+      if (error.code === 'P2003') {
+        throw new HttpException(
+          'No parent record was found for connection',
+          404,
+        );
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async editTrainingPlan(
     trainingPlanToEdit: EditTrainingPlanDto,
     id: number,
   ): Promise<TrainingPlanModel> {
-    return await this.prisma.trainingPlan.update({
-      where: {
-        id: id,
-      },
-      data: trainingPlanToEdit,
-    });
+    try {
+      return await this.prisma.trainingPlan.update({
+        where: {
+          id: id,
+        },
+        data: trainingPlanToEdit,
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async editPlainItem(
     plainItemToEdit: EditPlainItemDto,
     id: number,
   ): Promise<PlainItemModel> {
-    return await this.prisma.plainItem.update({
-      where: {
-        id: id,
-      },
-      data: plainItemToEdit,
-    });
+    try {
+      return await this.prisma.plainItem.update({
+        where: {
+          id: id,
+        },
+        data: plainItemToEdit,
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async editExercise(
@@ -216,81 +264,115 @@ export class TrainingPlanService {
         data: exerciseToEdit,
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
   async deletePlanItem(planItemId: number): Promise<PlainItemModel> {
-    await this.deleteAllExercisesByPlanItemId(planItemId);
+    try {
+      await this.deleteAllExercisesByPlanItemId(planItemId);
 
-    return await this.prisma.plainItem.delete({
-      where: {
-        id: planItemId,
-      },
-    });
+      return await this.prisma.plainItem.delete({
+        where: {
+          id: planItemId,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async deleteExercise(exerciseId: number): Promise<ExerciseModel> {
-    return await this.prisma.exercise.delete({
-      where: {
-        id: exerciseId,
-      },
-    });
+    try {
+      return await this.prisma.exercise.delete({
+        where: {
+          id: exerciseId,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async deleteTrainingPlan(id: number): Promise<TrainingPlanModel> {
-    await this.deleteAllPlanItemsByTrainingPlanId(id);
+    try {
+      await this.deleteAllPlanItemsByTrainingPlanId(id);
 
-    return await this.prisma.trainingPlan.delete({
-      where: {
-        id: id,
-      },
-    });
+      return await this.prisma.trainingPlan.delete({
+        where: {
+          id: id,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
+    }
   }
 
   async deleteAllPlanItemsByTrainingPlanId(id: number) {
-    const planItemsToDelete = await this.getAllPlanItemsByTrainingPlanId(id);
+    try {
+      const planItemsToDelete = await this.getAllPlanItemsByTrainingPlanId(id);
 
-    // planItemsToDelete.forEach(async (item) => {
-    //   await this.deleteAllExercisesByPlanItemId(item.id);
-    // });
+      for (const item of planItemsToDelete) {
+        await this.deleteAllExercisesByPlanItemId(item.id);
+      }
 
-    for (const item of planItemsToDelete) {
-      await this.deleteAllExercisesByPlanItemId(item.id);
-    }
-
-    await this.prisma.trainingPlan.update({
-      where: {
-        id: id,
-      },
-      data: {
-        plainItems: {
-          deleteMany: {},
+      await this.prisma.trainingPlan.update({
+        where: {
+          id: id,
         },
-      },
-    });
+        data: {
+          plainItems: {
+            deleteMany: {},
+          },
+        },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async getAllPlanItemsByTrainingPlanId(id: number): Promise<PlainItemModel[]> {
-    return await this.prisma.plainItem.findMany({
-      where: {
-        trainingPlanId: id,
-      },
-    });
+    try {
+      return await this.prisma.plainItem.findMany({
+        where: {
+          trainingPlanId: id,
+        },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async deleteAllExercisesByPlanItemId(planItemId: number) {
-    await this.prisma.plainItem.update({
-      where: {
-        id: planItemId,
-      },
-      data: {
-        exercises: {
-          deleteMany: {},
+    try {
+      await this.prisma.plainItem.update({
+        where: {
+          id: planItemId,
         },
-      },
-    });
+        data: {
+          exercises: {
+            deleteMany: {},
+          },
+        },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 }

@@ -32,10 +32,9 @@ export class ControlAuthGuard extends AuthGuard('jwt') {
     const currentUser = req.user;
 
     const isAdminRoles = adminRoles.includes(currentUser.role);
+    const canActivate = this.canActivateRoles(handler, currentUser);
 
     console.log(currentUser);
-
-    const canActivate = this.canActivateRoles(handler, currentUser);
 
     if (!isAdminRoles) {
       return (
@@ -62,7 +61,8 @@ export class ControlAuthGuard extends AuthGuard('jwt') {
     const expectedRoles = this.getExpectedRoles(handler);
 
     if (expectedRoles) {
-      return expectedRoles.some((role) => currentUser.role.includes(role));
+      // return expectedRoles.some((role) => currentUser.role.includes(role));
+      return expectedRoles.includes(currentUser.role);
     }
 
     return true;

@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
   Param,
   ParseIntPipe,
   Post,
@@ -27,14 +26,7 @@ export class GymClassController {
   @Get()
   @Roles(EnumRole.ADMIN, EnumRole.RECEPTION, EnumRole.TRAINER)
   async getAllGymClasses(): Promise<GymClassModel[]> {
-    try {
-      return await this.gymClassService.getAllGymClasses();
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.getAllGymClasses();
   }
 
   @Get('/:day')
@@ -42,29 +34,15 @@ export class GymClassController {
   async getGymClassesByDay(
     @Param('day') day: EnumDay,
   ): Promise<GymClassModel[]> {
-    try {
-      return await this.gymClassService.getGymClassesByDay(day);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.getGymClassesByDay(day);
   }
 
-  @Get('/:gymClassId')
+  @Get('/byId/:gymClassId')
   @Roles(EnumRole.ADMIN, EnumRole.RECEPTION)
   async getGymClassById(
     @Param('gymClassId') gymClassId: number,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.getGymClassById(gymClassId);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.getGymClassById(gymClassId);
   }
 
   @Post()
@@ -72,14 +50,7 @@ export class GymClassController {
   async createGymClass(
     @Body() newGymClass: GymClassDto,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.createGymClass(newGymClass);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.createGymClass(newGymClass);
   }
 
   @Put('edit/:gymClassId')
@@ -88,17 +59,7 @@ export class GymClassController {
     @Body() gymClassToEdit: GymClassDto,
     @Param('gymClassId') gymClassId: number,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.editGymClass(
-        gymClassToEdit,
-        gymClassId,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.editGymClass(gymClassToEdit, gymClassId);
   }
 
   @Put('addMember/:gymClassId/:memberId')
@@ -107,17 +68,7 @@ export class GymClassController {
     @Param('gymClassId') gymClassId: number,
     @Param('memberId') memberId: number,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.addMemberToGymClass(
-        gymClassId,
-        memberId,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.addMemberToGymClass(gymClassId, memberId);
   }
 
   @Put('removeMember/:gymClassId/:memberId')
@@ -127,17 +78,10 @@ export class GymClassController {
     @Param('gymClassId', ParseIntPipe) gymClassId: number,
     @Param('memberId', ParseIntPipe) memberId: number,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.removeMemberFromGymClass(
-        gymClassId,
-        memberId,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.removeMemberFromGymClass(
+      gymClassId,
+      memberId,
+    );
   }
 
   @Put('removeAllMembers/:gymClassId')
@@ -145,16 +89,7 @@ export class GymClassController {
   async removeAllMembersFromGymClass(
     @Param('gymClassId') gymClassId: number,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.removeAllMembersFromGymClass(
-        gymClassId,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.removeAllMembersFromGymClass(gymClassId);
   }
 
   @Delete('/:gymClassId')
@@ -162,13 +97,6 @@ export class GymClassController {
   async deleteGymClassById(
     @Param('gymClassId') gymClassId: number,
   ): Promise<GymClassModel> {
-    try {
-      return await this.gymClassService.deleteGymClassById(gymClassId);
-    } catch (error) {
-      throw new HttpException(
-        error.response.message,
-        error.response.statusCode,
-      );
-    }
+    return await this.gymClassService.deleteGymClassById(gymClassId);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GymClassDto } from './dto/gym-class.dto';
 import { GymClassModel } from './models/gymClass.model';
@@ -28,9 +28,7 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -55,9 +53,7 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -76,9 +72,7 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -96,9 +90,7 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -129,9 +121,11 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -145,9 +139,11 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      if (error.response.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -176,11 +172,14 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      // throw new InternalServerErrorException(
-      //   'There is a problem, try again later',
-      // );
-
-      return error.response;
+      if (error.code === 'P2016' || error.code === 'P2025') {
+        throw new HttpException(
+          'No parent or nested record was found for disconnect',
+          404,
+        );
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -209,9 +208,14 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      if (error.code === 'P2025') {
+        throw new HttpException(
+          'No parent record was found for a nested disconnect',
+          404,
+        );
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -233,9 +237,14 @@ export class GymClassService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'There is a problem, try again later',
-      );
+      if (error.code === 'P2025') {
+        throw new HttpException(
+          'No parent record was found for a nested disconnect',
+          404,
+        );
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 }

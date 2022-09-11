@@ -28,7 +28,7 @@ export class MemberEntryProcessGateway
   }
 
   afterInit(server: Server) {
-    this.logger.log('Initialized!');
+    this.logger.log(`Initialized`);
   }
 
   handleDisconnect(client: Socket) {
