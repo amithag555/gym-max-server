@@ -92,6 +92,12 @@ export class GymClassController {
     return await this.gymClassService.removeAllMembersFromGymClass(gymClassId);
   }
 
+  @Put('clearClasses')
+  @Roles(EnumRole.ADMIN)
+  async removeAllMembersFromAllGymClasses(): Promise<GymClassModel[]> {
+    return await this.gymClassService.removeAllMembersFromAllGymClasses();
+  }
+
   @Delete('/:gymClassId')
   @Roles(EnumRole.ADMIN)
   async deleteGymClassById(

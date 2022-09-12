@@ -83,7 +83,7 @@ export class WorkoutGoalService {
         },
       });
     } catch (error) {
-      return error;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -95,7 +95,11 @@ export class WorkoutGoalService {
         },
       });
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -113,7 +117,11 @@ export class WorkoutGoalService {
         },
       });
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -132,7 +140,11 @@ export class WorkoutGoalService {
         },
       });
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 }

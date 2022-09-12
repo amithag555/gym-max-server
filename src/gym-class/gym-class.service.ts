@@ -247,4 +247,25 @@ export class GymClassService {
       }
     }
   }
+
+  async removeAllMembersFromAllGymClasses(): Promise<GymClassModel[]> {
+    try {
+      const gymClasses = await this.getAllGymClasses();
+
+      if (!gymClasses) {
+        return null;
+      }
+
+      const returnedGymClasses = new Array<GymClassModel>();
+
+      for (const item of gymClasses) {
+        const gymClass = await this.removeAllMembersFromGymClass(item.id);
+        returnedGymClasses.push(gymClass);
+      }
+
+      return returnedGymClasses;
+    } catch (error) {
+      throw new HttpException('Internal server error', 500);
+    }
+  }
 }

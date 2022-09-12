@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateActivityPerHourDto } from './dto/create-activity-per-hour.dto';
 import { ActivityPerHourModel } from './models/activity-per-hour.model';
@@ -10,16 +10,11 @@ export class WorkDayActivityService {
 
   async getWorkDayActivityByDate(date: string): Promise<WorkDayActivityModel> {
     try {
-      const tempDate = new Date(`${date} 00:00:00`);
-      const newDate = new Date(
-        tempDate.getFullYear(),
-        tempDate.getMonth(),
-        tempDate.getDate() + 1,
-      );
+      const tempDate = new Date(date);
 
       return await this.prisma.workDayActivity.findFirst({
         where: {
-          date: new Date(newDate),
+          date: tempDate,
         },
         include: {
           activityPerHour: {
@@ -30,17 +25,18 @@ export class WorkDayActivityService {
         },
       });
     } catch (error) {
-      return error.response;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
   async getCurrentWorkDayActivity(): Promise<WorkDayActivityModel> {
     try {
-      const currentDate = new Date(
-        new Date().getFullYear(),
-        new Date().getMonth(),
-        new Date().getDate() + 1,
-      );
+      const currentDate = new Date();
+
+      currentDate.setUTCHours(0);
+      currentDate.setUTCMinutes(0);
+      currentDate.setUTCSeconds(0);
+      currentDate.setUTCMilliseconds(0);
 
       return await this.prisma.workDayActivity.findFirst({
         where: {
@@ -51,35 +47,32 @@ export class WorkDayActivityService {
         },
       });
     } catch (error) {
-      return error.response;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
   async createWorkDayActivity(): Promise<WorkDayActivityModel> {
     try {
-      const currentDate = `${new Date().getFullYear().toString()}-${(
-        new Date().getMonth() + 1
-      )
-        .toString()
-        .toString()}-${new Date().getDate().toString()}`;
+      const currentDate = new Date();
+
+      currentDate.setUTCHours(0);
+      currentDate.setUTCMinutes(0);
+      currentDate.setUTCSeconds(0);
+      currentDate.setUTCMilliseconds(0);
 
       const workDayActivity = await this.getWorkDayActivityByDate(
-        `${currentDate}`,
+        currentDate.toUTCString(),
       );
 
       if (!workDayActivity) {
         return await this.prisma.workDayActivity.create({
           data: {
-            date: new Date(
-              new Date().getFullYear(),
-              new Date().getMonth(),
-              new Date().getDate() + 1,
-            ),
+            date: currentDate,
           },
         });
       }
     } catch (error) {
-      return error.response;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -95,25 +88,24 @@ export class WorkDayActivityService {
         workDayActivity = await this.createWorkDayActivity();
       }
 
-      const currentDate = `${new Date().getFullYear().toString()}-${(
-        new Date().getMonth() + 1
-      )
-        .toString()
-        .toString()}-${new Date().getDate().toString()}`;
+      const currentHour = new Date();
 
       // After implement auto process change the hour property
-      const hour = new Date(`${currentDate} ${newActivityPerHour.hour}:00`);
+      currentHour.setUTCHours(newActivityPerHour.hour);
+      currentHour.setUTCMinutes(0);
+      currentHour.setUTCSeconds(0);
+      currentHour.setUTCMilliseconds(0);
 
       return await this.prisma.activityPerHour.create({
         data: {
-          hour: hour,
+          hour: currentHour,
           // After implement auto process change the count property
           count: newActivityPerHour.count,
           workDayActivityId: workDayActivity.id,
         },
       });
     } catch (error) {
-      return error.response;
+      throw new HttpException('Internal server error', 500);
     }
   }
 
@@ -132,7 +124,7 @@ export class WorkDayActivityService {
         },
       });
     } catch (error) {
-      return error.response;
+      return error;
     }
   }
 
@@ -148,13 +140,22 @@ export class WorkDayActivityService {
         },
       });
     } catch (error) {
-      return error.response;
+      if (error.code === 'P2025') {
+        throw new HttpException('Record to delete not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
   async updateCurrentWorkDayActivityCount(): Promise<WorkDayActivityModel> {
     try {
       const workDayActivity = await this.getCurrentWorkDayActivity();
+
+      if (!workDayActivity) {
+        throw new NotFoundException();
+      }
+
       const countSum = await this.getCurrentWorkDayActivityCountSum(
         workDayActivity.id,
       );
@@ -168,7 +169,11 @@ export class WorkDayActivityService {
         },
       });
     } catch (error) {
-      return error.response;
+      if (error.status === 404) {
+        throw new HttpException('Record to update not found', 404);
+      } else {
+        throw new HttpException('Internal server error', 500);
+      }
     }
   }
 
@@ -187,7 +192,7 @@ export class WorkDayActivityService {
 
       return countSum._sum.count;
     } catch (error) {
-      return error.response;
+      return error;
     }
   }
 }

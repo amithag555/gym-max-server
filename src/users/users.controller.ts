@@ -17,6 +17,7 @@ import { ControlAuthGuard } from 'src/guards/control-auth.guard';
 import { CreateUserDto } from 'src/models/create-user.dto';
 import { UpdatePasswordDto } from 'src/models/update-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
+import { ThinUserDto } from './dto/thin-user.dto';
 import { UserModel } from './models/user.model';
 import { UsersService } from './users.service';
 
@@ -30,7 +31,7 @@ export class UsersController {
   async getUsersByPageNumberAndPerPage(
     @Query('page', ParseIntPipe) pageNumber: number,
     @Query('perPage', ParseIntPipe) perPageNumber: number,
-  ): Promise<UserModel[]> {
+  ): Promise<ThinUserDto[]> {
     return await this.userService.getUsersByPageNumberAndPerPage(
       pageNumber,
       perPageNumber,
@@ -61,7 +62,7 @@ export class UsersController {
     @Query('page', ParseIntPipe) pageNumber: number,
     @Query('perPage', ParseIntPipe) perPageNumber: number,
     @Query('q') searchText: string,
-  ): Promise<UserModel[]> {
+  ): Promise<ThinUserDto[]> {
     return await this.userService.getUsersByUsername(
       pageNumber,
       perPageNumber,

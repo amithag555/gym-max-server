@@ -12,6 +12,7 @@ import { EditMemberDto } from './dto/edit-member.dto';
 import { UpdatePasswordDto } from 'src/models/update-password.dto';
 import { RetrieveMemberDto } from './dto/retrieve-member.dto';
 import { EnumMemberStatus } from '@prisma/client';
+import { ThinMemberDto } from './dto/thin-member.dto';
 
 @Injectable()
 export class MemberService {
@@ -41,13 +42,26 @@ export class MemberService {
   async getMembersByPageNumberAndPerPage(
     pageNumber: number,
     perPageNumber: number,
-  ): Promise<MemberModel[]> {
+  ): Promise<ThinMemberDto[]> {
     try {
       return await this.prisma.member.findMany({
         skip: (pageNumber - 1) * perPageNumber,
         take: perPageNumber,
         where: {
           isActive: true,
+        },
+        select: {
+          id: true,
+          fullName: true,
+          firstName: true,
+          lastName: true,
+          address: true,
+          phoneNumber: true,
+          email: true,
+          imgUrl: true,
+          status: true,
+          creationDate: true,
+          expiredDate: true,
         },
         orderBy: {
           firstName: 'asc',
@@ -142,7 +156,7 @@ export class MemberService {
     pageNumber: number,
     perPageNumber: number,
     searchText: string,
-  ): Promise<MemberModel[]> {
+  ): Promise<ThinMemberDto[]> {
     try {
       return await this.prisma.member.findMany({
         skip: (pageNumber - 1) * perPageNumber,
@@ -171,6 +185,19 @@ export class MemberService {
               },
             },
           ],
+        },
+        select: {
+          id: true,
+          fullName: true,
+          firstName: true,
+          lastName: true,
+          address: true,
+          phoneNumber: true,
+          email: true,
+          imgUrl: true,
+          status: true,
+          creationDate: true,
+          expiredDate: true,
         },
         orderBy: {
           firstName: 'asc',
@@ -350,7 +377,7 @@ export class MemberService {
       });
 
       if (!returnedMember) {
-        throw new UnauthorizedException('Invalid email or password');
+        throw new UnauthorizedException();
       }
 
       const validatePassword = await compare(
@@ -359,7 +386,7 @@ export class MemberService {
       );
 
       if (!validatePassword) {
-        throw new UnauthorizedException('Invalid email or password');
+        throw new UnauthorizedException();
       }
 
       return returnedMember;

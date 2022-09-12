@@ -19,6 +19,7 @@ import { CreateMemberDto } from 'src/models/create-member.dto';
 import { UpdatePasswordDto } from 'src/models/update-password.dto';
 import { EditMemberDto } from './dto/edit-member.dto';
 import { RetrieveMemberDto } from './dto/retrieve-member.dto';
+import { ThinMemberDto } from './dto/thin-member.dto';
 import { MemberService } from './member.service';
 import { MemberModel } from './models/member.model';
 
@@ -50,7 +51,7 @@ export class MemberController {
   async getMembersByPageNumberAndPerPage(
     @Query('page', ParseIntPipe) pageNumber: number,
     @Query('perPage', ParseIntPipe) perPageNumber: number,
-  ): Promise<MemberModel[]> {
+  ): Promise<ThinMemberDto[]> {
     return await this.memberService.getMembersByPageNumberAndPerPage(
       pageNumber,
       perPageNumber,
@@ -71,7 +72,7 @@ export class MemberController {
     @Query('page', ParseIntPipe) pageNumber: number,
     @Query('perPage', ParseIntPipe) perPageNumber: number,
     @Query('q') searchText: string,
-  ): Promise<MemberModel[]> {
+  ): Promise<ThinMemberDto[]> {
     return await this.memberService.getMembersByNameOrPhoneNumber(
       pageNumber,
       perPageNumber,

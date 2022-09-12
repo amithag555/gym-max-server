@@ -28,20 +28,12 @@ export class WorkDayActivityController {
     @Query('q')
     date: string,
   ): Promise<WorkDayActivityModel> {
-    try {
-      return await this.workDayActivityService.getWorkDayActivityByDate(date);
-    } catch (error) {
-      return error.response;
-    }
+    return await this.workDayActivityService.getWorkDayActivityByDate(date);
   }
 
   @Get()
   async getCurrentWorkDayActivity(): Promise<WorkDayActivityModel> {
-    try {
-      return await this.workDayActivityService.getCurrentWorkDayActivity();
-    } catch (error) {
-      return error.response;
-    }
+    return await this.workDayActivityService.getCurrentWorkDayActivity();
   }
 
   @Post()

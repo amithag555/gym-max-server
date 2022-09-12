@@ -5,8 +5,4 @@ export class CreateWorkoutGoalDto {
   @IsNumber()
   @Max(100)
   trainingNumber: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  memberId: number;
 }

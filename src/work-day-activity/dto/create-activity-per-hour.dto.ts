@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateActivityPerHourDto {
   @IsNotEmpty()
-  @IsString()
-  hour: string;
+  @IsNumber()
+  hour: number;
 
   @IsNotEmpty()
   @IsNumber()

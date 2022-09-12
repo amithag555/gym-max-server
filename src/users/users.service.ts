@@ -9,6 +9,7 @@ import { LoginUserDto } from 'src/models/login-user.dto';
 import { UpdatePasswordDto } from 'src/models/update-password.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EditUserDto } from './dto/edit-user.dto';
+import { ThinUserDto } from './dto/thin-user.dto';
 import { UserModel } from './models/user.model';
 
 @Injectable()
@@ -18,11 +19,19 @@ export class UsersService {
   async getUsersByPageNumberAndPerPage(
     pageNumber: number,
     perPageNumber: number,
-  ): Promise<UserModel[]> {
+  ): Promise<ThinUserDto[]> {
     try {
       return await this.prisma.user.findMany({
         skip: (pageNumber - 1) * perPageNumber,
         take: perPageNumber,
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
+        },
         orderBy: {
           username: 'asc',
         },
@@ -58,7 +67,7 @@ export class UsersService {
     pageNumber: number,
     perPageNumber: number,
     searchText: string,
-  ): Promise<UserModel[]> {
+  ): Promise<ThinUserDto[]> {
     try {
       return await this.prisma.user.findMany({
         skip: (pageNumber - 1) * perPageNumber,
@@ -67,6 +76,14 @@ export class UsersService {
           username: {
             contains: searchText,
           },
+        },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
         },
         orderBy: {
           username: 'asc',
@@ -209,7 +226,7 @@ export class UsersService {
       });
 
       if (!returnedUser) {
-        throw new UnauthorizedException('Invalid username or password');
+        throw new UnauthorizedException();
       }
 
       const validatePassword = await compare(
@@ -218,7 +235,7 @@ export class UsersService {
       );
 
       if (!validatePassword) {
-        throw new UnauthorizedException('Invalid username or password');
+        throw new UnauthorizedException();
       }
 
       return returnedUser;
